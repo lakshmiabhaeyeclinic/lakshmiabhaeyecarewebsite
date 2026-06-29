@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laxmi Abha Eye Care Wellness Center</title>
+<title>About the Team | Laxmi Abha Eye Care Wellness Center</title>
 
 <style>
 
@@ -50,13 +50,13 @@ nav a:hover{
     background:#0077b6;
 }
 
-/* Hero Section */
+/* Hero */
 
 .hero{
     background:#ff8c00;
     color:white;
     text-align:center;
-    padding:80px 20px;
+    padding:70px 20px;
 }
 
 .hero h1{
@@ -68,17 +68,25 @@ nav a:hover{
     font-size:20px;
 }
 
-/* About Section */
+/* Team Sections */
 
-.about{
+.team{
+    width:90%;
+    max-width:1100px;
+    margin:50px auto;
+}
+
+.member{
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:30px;
-    width:90%;
-    max-width:1100px;
-    margin:50px auto;
+    margin-bottom:50px;
     flex-wrap:wrap;
+}
+
+.member.reverse{
+    flex-direction:row-reverse;
 }
 
 .text{
@@ -95,6 +103,7 @@ nav a:hover{
 
 .text p{
     line-height:1.8;
+    font-size:17px;
 }
 
 .image{
@@ -104,41 +113,7 @@ nav a:hover{
 .image img{
     width:100%;
     border-radius:10px;
-}
-
-/* Services */
-
-.services{
-    width:90%;
-    max-width:1100px;
-    margin:40px auto;
-}
-
-.services h2{
-    text-align:center;
-    color:#0077b6;
-    margin-bottom:30px;
-}
-
-.cards{
-    display:flex;
-    gap:20px;
-    justify-content:center;
-    flex-wrap:wrap;
-}
-
-.card{
-    background:white;
-    width:300px;
-    padding:25px;
-    border-radius:10px;
-    text-align:center;
     box-shadow:0 5px 15px rgba(0,0,0,.2);
-}
-
-.card h3{
-    color:#0077b6;
-    margin-bottom:15px;
 }
 
 /* Footer */
@@ -171,86 +146,68 @@ footer{
 <a href="home_page.html">Home</a>
 
 <a href="about_doctor.html">About Doctor</a>
-
 <a href="gallery.html">Gallery</a>
 
 <a href="login.html">Patient Registration</a>
-
-<a href="login.html">Patients</a>
-<a href="contact.html">Contact</a>
 
 </nav>
 
 <section class="hero">
 
-<h1>Welcome to Laxmi Abha Eye Care Wellness Center</h1>
+<h1>Meet Our Team</h1>
 
-<p>Modern Healthcare | Expert Doctors | Advanced Eye Care</p>
-
-</section>
-
-<section class="about">
-
-<div class="text">
-
-<h2>About Us</h2>
-
-<p>
-
-Laxmi Abha Eye Care Wellness Center is committed to providing
-high-quality eye care services using modern technology and experienced
-medical professionals.
-
-We specialize in eye examinations, glaucoma
-treatment, diabetic eye care, and vision correction. Our goal is to
-help every patient enjoy clear and healthy vision.
-
-</p>
-
-</div>
-
-<div class="image">
-
-<img src="logo.jpg"
-alt="Eye Care Hospital">
-
-</div>
+<p>Dedicated Professionals Committed to Your Eye Health</p>
 
 </section>
 
-<section class="services">
+<section class="team">
 
-<h2>Our Services</h2>
+    <!-- Team Member 1 -->
+    <div class="member">
 
-<div class="cards">
+        <div class="text">
+            <h2>Mrs. Nancy kundu</h2>
 
-<div class="card">
+            <p>
+                Dr. Prajjwal Kumar is an expert Retina Surgeon with over
+                <strong>15 years of experience</strong>. He specializes in
+                retinal diseases, diabetic eye care, and advanced eye
+                surgeries. His dedication and expertise have helped thousands
+                of patients achieve better vision.
+            </p>
+        </div>
 
-<h3>👁 Eye Checkup</h3>
+        <div class="image">
+            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=900&q=80"
+                 alt="Dr Prajjwal Kumar">
+        </div>
 
-<p>Complete eye examination using modern diagnostic equipment.</p>
+    </div>
 
-</div>
+    <!-- Team Member 2 -->
+    <div class="member reverse">
 
-<div class="card">
+        <div class="text">
+            <h2>Our Medical Team</h2>
 
-<h3>Medicines</h3>
+            <p>
+                Our experienced team of ophthalmologists, optometrists,
+                nurses, and support staff work together to provide
+                compassionate and high-quality eye care. Using modern
+                technology and patient-centered treatment, we ensure that
+                every patient receives the best possible care.
+            </p>
+        </div>
 
-<p>All types of medicens available</p>
+        <div class="image">
+            <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=900&q=80"
+                 alt="Medical Team">
+        </div>
 
-</div>
-
-<div class="card">
-
-<h3>👓 Vision Care</h3>
-
-<p>Prescription glasses, contact lenses, and vision correction.</p>
-
-</div>
-
-</div>
+    </div>
 
 </section>
+
 <footer>
 
 <p>© 2026 Laxmi Abha Eye Care Wellness Center | All Rights Reserved</p>
