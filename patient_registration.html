@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lakshmi Abha Eye Care Wellness enter</title>
+<title>Lakshmi Abha Eye Care Wellness Center</title>
 
 <style>
 *{
@@ -41,7 +41,7 @@ nav a:hover{
 }
 
 .hero {
-    background-color: #ff8c00; /* Dark Orange */
+    background-color: #ff8c00;
     color: white;
     text-align: center;
     padding: 80px;
@@ -87,6 +87,11 @@ button:hover{
     background:#023e8a;
 }
 
+button:disabled{
+    background:#999;
+    cursor:not-allowed;
+}
+
 table{
     width:100%;
     border-collapse:collapse;
@@ -103,9 +108,40 @@ table th{
     background:#0077b6;
     color:white;
 }
-a
+
 .deleteBtn{
     background:red;
+}
+
+.deleteBtn:hover{
+    background:darkred;
+}
+
+.success-message{
+    background:#d4edda;
+    color:#155724;
+    padding:12px;
+    border-radius:5px;
+    margin-bottom:15px;
+    display:none;
+}
+
+.error-message{
+    background:#f8d7da;
+    color:#721c24;
+    padding:12px;
+    border-radius:5px;
+    margin-bottom:15px;
+    display:none;
+}
+
+.loading-message{
+    background:#e7f3ff;
+    color:#004085;
+    padding:12px;
+    border-radius:5px;
+    margin-bottom:15px;
+    display:none;
 }
 
 footer{
@@ -115,6 +151,37 @@ footer{
     text-align:center;
     padding:15px;
 }
+
+.export-btn{
+    background:#28a745;
+    width:100%;
+    margin-top:15px;
+}
+
+.export-btn:hover{
+    background:#218838;
+}
+
+#patientForm {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+#patientForm input, #patientForm select {
+    margin: 0;
+}
+
+#patientForm button {
+    grid-column: 1 / -1;
+}
+
+@media(max-width:768px) {
+    #patientForm {
+        grid-template-columns: 1fr;
+    }
+}
+
 </style>
 
 <link rel="stylesheet" href="clinic-ui.css">
@@ -147,6 +214,18 @@ footer{
 
 <h2>Patient Registration</h2>
 
+<div class="success-message" id="successMessage">
+✓ Patient registered successfully!
+</div>
+
+<div class="error-message" id="errorMessage">
+✗ Error registering patient. Please try again.
+</div>
+
+<div class="loading-message" id="loadingMessage">
+⏳ Syncing patient data...
+</div>
+
 <form id="patientForm">
 
 <input type="text" id="name" placeholder="Patient Name" required>
@@ -178,7 +257,7 @@ footer{
 
 <input type="number" id="totalBill" placeholder="Total Bill (₹)" readonly>
 
-<button type="submit">Register Patient</button>
+<button type="submit" id="submitBtn">Register Patient</button>
 
 </form>
 
@@ -217,59 +296,68 @@ footer{
 
 </table>
 
+<button class="export-btn" onclick="exportToExcel()">Export Patients to Excel</button>
+
 </div>
 
 </div>
-<button onclick="exportToExcel()">Export Patients to Excel</button>
 
 <footer>
 © 2026 Lakshmi Abha Eye Care Wellness Center
 </footer>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+
 <script>
+console.log("📱 Patient Registration page loaded");
 
-let patients = JSON.parse(localStorage.getItem("patients")) || [];
+// ============ FIREBASE INITIALIZATION ============
+let db = null;
+let patientsRef = null;
+let patients = [];
 
-const form=document.getElementById("patientForm");
-const table=document.getElementById("patientTable");
+function initFirebase() {
+    console.log("🔧 Initializing Firebase...");
+    
+    if (typeof firebase === 'undefined') {
+        console.error("❌ Firebase SDK not loaded!");
+        document.getElementById('errorMessage').textContent = "⚠️ Firebase SDK failed to load. Check your internet connection.";
+        document.getElementById('errorMessage').style.display = 'block';
+        return false;
+    }
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyCAIYua3NdrATxkhHtOrsa-2VGsHMvXkPk",
+        authDomain: "lakshmiabhareviews.firebaseapp.com",
+        databaseURL: "https://lakshmiabhareviews-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "lakshmiabhareviews",
+        storageBucket: "lakshmiabhareviews.firebasestorage.app",
+        messagingSenderId: "879596104607",
+        appId: "1:879596104607:web:a53b865898d4954a586baa"
+    };
 
-function displayPatients(){
-
-table.innerHTML="";
-
-patients.forEach((patient,index)=>{
-
-table.innerHTML += `
-<tr>
-
-<td>${patient.name}</td>
-<td>${patient.age}</td>
-<td>${patient.gender}</td>
-<td>${patient.phone}</td>
-<td>${patient.address}</td>
-<td>${patient.disease}</td>
-<td>₹${patient.opdFees}</td>
-<td>₹${patient.lensPrice}</td>
-<td>₹${patient.framePrice}</td>
-<td>${patient.frameBrand}</td>
-<td>₹${patient.medicinePrice}</td>
-<td><b>₹${patient.totalBill}</b></td>
-
-<td>
-<button class="deleteBtn" onclick="deletePatient(${index})">
-Delete
-</button>
-</td>
-
-</tr>
-`;
-
-});
-
-localStorage.setItem("patients",JSON.stringify(patients));
-
+    try {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        patientsRef = db.ref('clinic_patients');
+        console.log("✓ Firebase initialized successfully");
+        return true;
+    } catch (error) {
+        console.error("❌ Firebase initialization failed:", error);
+        document.getElementById('errorMessage').textContent = "⚠️ Database connection failed: " + error.message;
+        document.getElementById('errorMessage').style.display = 'block';
+        return false;
+    }
 }
 
+// Initialize Firebase on page load
+if (initFirebase()) {
+    displayPatients();
+}
+
+// ============ CALCULATE BILL ============
 const opdFees = document.getElementById("opdFees");
 const lensPrice = document.getElementById("lensPrice");
 const framePrice = document.getElementById("framePrice");
@@ -277,7 +365,6 @@ const medicinePrice = document.getElementById("medicinePrice");
 const totalBill = document.getElementById("totalBill");
 
 function calculateBill(){
-
     let total =
         Number(opdFees.value || 0) +
         Number(lensPrice.value || 0) +
@@ -292,90 +379,171 @@ lensPrice.addEventListener("input", calculateBill);
 framePrice.addEventListener("input", calculateBill);
 medicinePrice.addEventListener("input", calculateBill);
 
-form.addEventListener("submit",function(e){
+// ============ FORM SUBMISSION ============
+document.getElementById("patientForm").addEventListener("submit", function(e){
+    e.preventDefault();
 
-e.preventDefault();
+    if (!patientsRef) {
+        alert("Database not connected. Please refresh the page.");
+        return;
+    }
 
-const patient={
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Registering...";
 
-name:document.getElementById("name").value,
-age:document.getElementById("age").value,
-gender:document.getElementById("gender").value,
-phone:document.getElementById("phone").value,
-address:document.getElementById("address").value,
-disease:document.getElementById("disease").value,
-opdFees:document.getElementById("opdFees").value,
-lensPrice:document.getElementById("lensPrice").value,
-framePrice:document.getElementById("framePrice").value,
-frameBrand:document.getElementById("frameBrand").value,
-medicinePrice:document.getElementById("medicinePrice").value,
-totalBill:document.getElementById("totalBill").value
+    const patient = {
+        name: document.getElementById("name").value,
+        age: document.getElementById("age").value,
+        gender: document.getElementById("gender").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value,
+        disease: document.getElementById("disease").value,
+        opdFees: document.getElementById("opdFees").value,
+        lensPrice: document.getElementById("lensPrice").value,
+        framePrice: document.getElementById("framePrice").value,
+        frameBrand: document.getElementById("frameBrand").value,
+        medicinePrice: document.getElementById("medicinePrice").value,
+        totalBill: document.getElementById("totalBill").value,
+        timestamp: new Date().getTime(),
+        date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    };
 
-};
-patients.push(patient);
+    console.log("📝 Registering patient:", patient.name);
 
-displayPatients();
+    patientsRef.push(patient).then(() => {
+        console.log("✓ Patient registered successfully!");
+        
+        document.getElementById("patientForm").reset();
+        totalBill.value = 0;
 
-form.reset();
-totalBill.value = 0;
+        const successMsg = document.getElementById("successMessage");
+        successMsg.style.display = "block";
+        setTimeout(() => {
+            successMsg.style.display = "none";
+        }, 3000);
 
-alert("Patient Registered Successfully!");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Register Patient";
+    }).catch(error => {
+        console.error("❌ Error registering patient:", error);
+        const errorMsg = document.getElementById("errorMessage");
+        errorMsg.textContent = "Error: " + error.message;
+        errorMsg.style.display = "block";
+        setTimeout(() => {
+            errorMsg.style.display = "none";
+        }, 3000);
 
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Register Patient";
+    });
 });
 
-function deletePatient(index){
+// ============ DISPLAY PATIENTS ============
+function displayPatients(){
+    if (!patientsRef) {
+        console.error("Patients reference not initialized");
+        return;
+    }
 
-if(confirm("Delete this patient?")){
+    const table = document.getElementById("patientTable");
+    const loadingMsg = document.getElementById("loadingMessage");
+    
+    console.log("👀 Loading patients from Firebase...");
+    loadingMsg.style.display = "block";
 
-patients.splice(index,1);
+    patientsRef.on('value', (snapshot) => {
+        console.log("📊 Patients data received");
+        loadingMsg.style.display = "none";
+        patients = [];
+        table.innerHTML = "";
 
-displayPatients();
+        snapshot.forEach((childSnapshot) => {
+            const patient = childSnapshot.val();
+            patient.id = childSnapshot.key;
+            patients.unshift(patient);
+        });
 
+        console.log("✓ Total patients loaded:", patients.length);
+
+        if (patients.length === 0) {
+            table.innerHTML = '<tr><td colspan="13" style="text-align:center; color:#999; padding:30px;">No patients registered yet</td></tr>';
+            return;
+        }
+
+        patients.forEach((patient) => {
+            table.innerHTML += `
+            <tr>
+                <td>${patient.name}</td>
+                <td>${patient.age}</td>
+                <td>${patient.gender}</td>
+                <td>${patient.phone}</td>
+                <td>${patient.address}</td>
+                <td>${patient.disease}</td>
+                <td>₹${patient.opdFees}</td>
+                <td>₹${patient.lensPrice}</td>
+                <td>₹${patient.framePrice}</td>
+                <td>${patient.frameBrand}</td>
+                <td>₹${patient.medicinePrice}</td>
+                <td><b>₹${patient.totalBill}</b></td>
+                <td>
+                    <button class="deleteBtn" onclick="deletePatient('${patient.id}')">Delete</button>
+                </td>
+            </tr>
+            `;
+        });
+    }, (error) => {
+        console.error("❌ Error loading patients:", error);
+        loadingMsg.style.display = "none";
+        table.innerHTML = '<tr><td colspan="13" style="text-align:center; color:red; padding:30px;">Error loading patients. Please refresh the page.</td></tr>';
+    });
 }
 
+// ============ DELETE PATIENT ============
+function deletePatient(patientId){
+    if(confirm("Are you sure you want to delete this patient record?")){
+        console.log("🗑️ Deleting patient:", patientId);
+        patientsRef.child(patientId).remove().catch(error => {
+            console.error("Error deleting patient:", error);
+            alert("Error deleting patient. Please try again.");
+        });
+    }
 }
 
-displayPatients();
-
+// ============ EXPORT TO EXCEL ============
 function exportToExcel() {
-
     if (patients.length === 0) {
         alert("No patient records to export.");
         return;
     }
 
-   let csv =
-"Name,Age,Gender,Phone,Address,Disease,OPD Fees,Lens Price,Frame Price,Frame Brand,Medicine Price,Total Bill\n";
+    console.log("📊 Exporting patients to CSV...");
 
-  patients.forEach(patient => {
+    let csv = "Name,Age,Gender,Phone,Address,Disease,OPD Fees,Lens Price,Frame Price,Frame Brand,Medicine Price,Total Bill,Registration Date\n";
 
-csv += `"${patient.name}",
-"${patient.age}",
-"${patient.gender}",
-"${patient.phone}",
-"${patient.address}",
-"${patient.disease}",
-"${patient.opdFees}",
-"${patient.lensPrice}",
-"${patient.framePrice}",
-"${patient.frameBrand}",
-"${patient.medicinePrice}",
-"${patient.totalBill}"\n`;
-
-});
+    patients.forEach(patient => {
+        csv += `"${patient.name}","${patient.age}","${patient.gender}","${patient.phone}","${patient.address}","${patient.disease}","${patient.opdFees}","${patient.lensPrice}","${patient.framePrice}","${patient.frameBrand}","${patient.medicinePrice}","${patient.totalBill}","${patient.date}"\n`;
+    });
 
     const blob = new Blob([csv], {
         type: "text/csv;charset=utf-8;"
     });
 
     const link = document.createElement("a");
-
     link.href = URL.createObjectURL(blob);
-    link.download = "Patients.csv";
+    link.download = "Patients_" + new Date().toLocaleDateString() + ".csv";
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    console.log("✓ Export complete");
 }
 
 </script>
